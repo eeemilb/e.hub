@@ -877,19 +877,18 @@ Breakdown detection module
            ╚════════════════════════════════════════════════════════════╝ */
 
         function handleTopicClick(event) {
-            event.preventDefault();
-            const url = event.currentTarget.getAttribute('href');
+    // 1. Предотвращаем стандартное поведение ссылки, чтобы избежать двойного перехода.
+    event.preventDefault();
+    
+    // 2. Получаем URL из атрибута href, который мы правильно настроили.
+    const url = event.currentTarget.getAttribute('href');
 
-            // Если Telegram Web App доступен, использовать его функцию открытия ссылки
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.openLink(url);
-            } else {
-                // Иначе открыть в новой вкладке
-                window.open(url, '_blank');
-            }
+    // 3. Используем стандартную навигацию для перехода на новую страницу
+    //    ВНУТРИ текущего окна Mini App.
+    window.location.href = url;
 
-            console.log(`→ Открытие ссылки: ${url}`);
-        }
+    console.log(`→ Внутренний переход на: ${url}`);
+}
 
         /* ╔════════════════════════════════════════════════════════════╗
            ║         ОБНАРУЖЕНИЕ ТЕМЫ СИСТЕМЫ                            ║
