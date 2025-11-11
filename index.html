@@ -2,103 +2,1016 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Электрические схемы</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>SEMAT E-HUB - Telegram Mini App</title>
+    
+    <!-- ПОДКЛЮЧЕНИЕ TELEGRAM WEB APP API -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- GOOGLE FONTS ДЛЯ КРАСИВЫХ ШРИФТОВ -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              ПЕРЕМЕННЫЕ И ГЛОБАЛЬНЫЕ СТИЛИ                     ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+        
+        :root {
+            /* НЕОНОВЫЕ ЦВЕТА ДЛЯ СВЕЧЕНИЯ */
+            --neon-blue: #00D9FF;
+            --neon-yellow: #FFFF00;
+            --neon-blue-dark: #0099CC;
+            --neon-yellow-dark: #CCCC00;
+            
+            /* ЦВЕТА ДЛЯ ТЕМНОЙ ТЕМЫ (ПО УМОЛЧАНИЮ) */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #242424;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+            
+            /* РАССТОЯНИЯ И РАЗМЕРЫ */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 24px;
+            
+            /* РАДИУСЫ СКРУГЛЕНИЯ */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            
+            /* ВРЕМЯ АНИМАЦИЙ */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
+        /* СВЕТЛАЯ ТЕМА */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #ffffff;
+                --bg-secondary: #f5f5f5;
+                --bg-tertiary: #eeeeee;
+                --text-primary: #1a1a1a;
+                --text-secondary: #666666;
+                --border-color: #e0e0e0;
+            }
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              СБРОС СТИЛЕЙ И БАЗОВЫЕ СВОЙСТВА                   ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
-        .file-item {
-            padding: 15px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Roboto', 'JetBrains Mono', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 16px;
+            line-height: 1.5;
+            letter-spacing: 0.3px;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              ОСНОВНОЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ                     ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            background-color: var(--bg-primary);
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              СТИЛИ ЗАГОЛОВКА ПРИЛОЖЕНИЯ                        ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        .header {
+            position: relative;
+            padding: var(--spacing-lg);
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-yellow) 100%);
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+            animation: headerShine 3s infinite;
+            border-radius: inherit;
+        }
+
+        @keyframes headerShine {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-title {
+            font-size: clamp(20px, 5vw, 28px);
+            font-weight: 700;
+            color: #000000;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+        }
+
+        .header-icon {
+            font-size: 28px;
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              СТИЛИ НАВИГАЦИОННЫХ КНОПОК                       ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        .nav-container {
+            display: flex;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background-color: var(--bg-secondary);
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border-color);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* СКРЫТЬ СКРОЛЛБАР */
+        .nav-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-button {
+            flex-shrink: 0;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border: 2px solid var(--neon-blue);
+            background-color: transparent;
+            color: var(--neon-blue);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
         }
-        #file-content {
-            margin-top: 20px;
+
+        /* СОСТОЯНИЕ ПРИ НАВЕДЕНИИ */
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+            border-color: var(--neon-yellow);
         }
-        .back-btn {
-            margin-bottom: 15px;
-            padding: 8px 15px;
+
+        /* АКТИВНАЯ КНОПКА */
+        .nav-button.active {
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-yellow) 100%);
+            color: #000000;
+            border-color: var(--neon-yellow);
+            font-weight: 700;
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.4);
+        }
+
+        .nav-button.active::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: buttonRipple 0.6s ease-out infinite;
+        }
+
+        @keyframes buttonRipple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 40px;
+                height: 40px;
+                opacity: 0;
+            }
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              СТИЛИ ОСНОВНОГО КОНТЕНТА                         ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        .content-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: var(--spacing-md);
+            background-color: var(--bg-primary);
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* КРАСИВЫЙ СКРОЛЛБАР */
+        .content-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content-wrapper::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content-wrapper::-webkit-scrollbar-thumb {
+            background: var(--neon-blue);
+            border-radius: 3px;
+            opacity: 0.3;
+        }
+
+        .content-wrapper::-webkit-scrollbar-thumb:hover {
+            opacity: 0.6;
+        }
+
+        .section {
+            display: none;
+            animation: sectionFadeIn 0.4s ease-out forwards;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes sectionFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              СЕТКА ТОПИКОВ                                     ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-md);
+            animation: gridFadeIn 0.4s ease-out;
+        }
+
+        /* АДАПТИВНАЯ СЕТКА */
+        @media (min-width: 480px) {
+            .topics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--spacing-lg);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .topics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @keyframes gridFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              СТИЛИ КАРТОЧЕК ТОПИКОВ                           ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        .topic-card {
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--neon-blue);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            min-height: 240px;
+        }
+
+        /* ЭФФЕКТ ПРИ НАВЕДЕНИИ */
+        .topic-card:hover {
+            border-color: var(--neon-yellow);
+            transform: translateY(-4px);
+            box-shadow: 
+                0 0 20px rgba(0, 217, 255, 0.3),
+                0 0 40px rgba(255, 255, 0, 0.2);
+        }
+
+        /* ФОНОВЫЙ ЭФФЕКТ СВЕЧЕНИЯ НА КАРТОЧКЕ */
+        .topic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.1), transparent);
+            transition: left var(--transition-slow);
+            pointer-events: none;
+        }
+
+        .topic-card:hover::before {
+            left: 100%;
+        }
+
+        .topic-card-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            height: 100%;
+        }
+
+        .topic-emoji {
+            font-size: 36px;
+            line-height: 1;
+            animation: emojiFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes emojiFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .topic-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+            margin: 0;
+            word-break: break-word;
+        }
+
+        .topic-description {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              СТИЛИ КНОПОК ССЫЛОК В ТОПИКАХ                    ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        .topic-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-yellow) 100%);
+            color: #000000;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            align-self: flex-start;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
+        }
+
+        .topic-link::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .topic-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 217, 255, 0.3);
+        }
+
+        .topic-link:active {
+            transform: scale(0.95);
+        }
+
+        .topic-link:active::after {
+            animation: linkRipple 0.6s ease-out;
+        }
+
+        @keyframes linkRipple {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 60px;
+                height: 60px;
+                opacity: 0;
+            }
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              АДАПТИВНОСТЬ                                      ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        @media (max-width: 320px) {
+            .header-title {
+                font-size: 18px;
+            }
+
+            .topic-card {
+                padding: var(--spacing-md);
+                min-height: auto;
+            }
+
+            .topic-emoji {
+                font-size: 28px;
+            }
+
+            .topic-title {
+                font-size: 14px;
+            }
+
+            .topic-description {
+                font-size: 12px;
+            }
+
+            .nav-button {
+                padding: var(--spacing-xs) var(--spacing-md);
+                font-size: 12px;
+            }
+        }
+
+        /* ОПТИМИЗАЦИЯ ДЛЯ ПЛАНШЕТОВ */
+        @media (min-width: 1024px) {
+            .content-wrapper {
+                padding: var(--spacing-xl);
+            }
+
+            .topics-grid {
+                gap: var(--spacing-xl);
+            }
+        }
+
+        /* ╔════════════════════════════════════════════════════════════════╗
+           ║              СИСТЕМНЫЕ СТИЛИ                                   ║
+           ╚════════════════════════════════════════════════════════════════╝ */
+
+        /* ОТКЛЮЧИТЬ МАСШТАБИРОВАНИЕ ТЕКСТА НА iOS */
+        input, button, textarea, select {
+            font-size: 16px;
+        }
+
+        /* УБРАТЬ СИНЕЕ ВЫДЕЛЕНИЕ ССЫЛОК */
+        a {
+            -webkit-touch-callout: none;
+        }
+
+        /* ПЛАВНЫЕ ПЕРЕХОДЫ */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .topic-card,
+        .nav-button,
+        .topic-link {
+            transition: all 0.3s ease;
         }
     </style>
 </head>
 <body>
-    <h1>📋 Электрические схемы и чертежи</h1>
-    
-    <div id="file-list">
-        <!-- Список файлов будет здесь -->
-    </div>
-    
-    <div id="file-content" style="display:none;">
-        <button class="back-btn" onclick="showFileList()">← Назад к списку</button>
-        <div id="content-display"></div>
+    <!-- ОСНОВНОЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ -->
+    <div class="app-container">
+        
+        <!-- ЗАГОЛОВОК ПРИЛОЖЕНИЯ -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="header-title">
+                    <span class="header-icon">⚡</span>
+                    E-HUB
+                </h1>
+            </div>
+        </header>
+
+        <!-- НАВИГАЦИОННЫЕ КНОПКИ РАЗДЕЛОВ -->
+        <nav class="nav-container">
+            <button class="nav-button active" onclick="switchSection(0)" data-section="0">
+                <span>📚</span> Платы
+            </button>
+            <button class="nav-button" onclick="switchSection(1)" data-section="1">
+                <span>🔧</span> Схемы
+            </button>
+            <button class="nav-button" onclick="switchSection(2)" data-section="2">
+                <span>💡</span> Ресурсы
+            </button>
+        </nav>
+
+        <!-- ОСНОВНОЙ КОНТЕНТ -->
+        <div class="content-wrapper">
+            
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- РАЗДЕЛ 1: ОСНОВЫ И ТЕОРИЯ                                -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <section class="section active" data-section-id="0">
+                <div class="topics-grid">
+                    
+                    <!-- ТОПИК 1.1 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">📖</div>
+                            <h3 class="topic-title">Модуль детектирования пробоя
+Breakdown detection module
+</h3>
+                            <p class="topic-description">
+                                Контролирует напряжение пробоя между электродом и деталью, когда напряжение пробоя падает до установленного нами уровня на микроконтроллер платы генератора подаётся логический сигнал, после чего открываются рабочие ключи.
+                            </p>
+                            <a href="https://github.com/eeemilb/e.hub/blob/branch-section-1/bom_1.html" class="topic-link" onclick="handleTopicClick(event)">Открыть →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 1.2 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">⚙️</div>
+                            <h3 class="topic-title">Параметры машины</h3>
+                            <p class="topic-description">
+                                Оптимальные технические характеристики и спецификации EDM-машин для различных приложений и производств
+                            </p>
+                            <a href="https://example.com/machine-params" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 1.3 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">🔬</div>
+                            <h3 class="topic-title">Материалы электродов</h3>
+                            <p class="topic-description">
+                                Выбор и подготовка материалов электродов, их физические свойства и влияние на качество обработки
+                            </p>
+                            <a href="https://example.com/electrode-materials" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 1.4 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">💧</div>
+                            <h3 class="topic-title">Рабочие жидкости</h3>
+                            <p class="topic-description">
+                                Типы и свойства диэлектрических жидкостей, правила использования, хранения и безопасность при работе
+                            </p>
+                            <a href="https://example.com/working-fluids" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 1.5 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">📊</div>
+                            <h3 class="topic-title">Контроль качества</h3>
+                            <p class="topic-description">
+                                Методы проверки и тестирования качества обработанных деталей, стандарты, допуски и сертификация
+                            </p>
+                            <a href="https://example.com/quality-control" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- РАЗДЕЛ 2: КОНСТРУИРОВАНИЕ И ИЗГОТОВЛЕНИЕ                -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <section class="section" data-section-id="1">
+                <div class="topics-grid">
+                    
+                    <!-- ТОПИК 2.1 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">🛠️</div>
+                            <h3 class="topic-title">Сборка машины</h3>
+                            <p class="topic-description">
+                                Пошаговое руководство по сборке EDM-машины, монтаж компонентов, калибровка и предварительная наладка
+                            </p>
+                            <a href="https://example.com/assembly" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 2.2 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">⚡</div>
+                            <h3 class="topic-title">Схемы питания</h3>
+                            <p class="topic-description">
+                                Электрические схемы импульсных генераторов, источники питания, расчеты мощности и выбор компонентов
+                            </p>
+                            <a href="https://example.com/power-schemes" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 2.3 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">🖥️</div>
+                            <h3 class="topic-title">Управление и автоматика</h3>
+                            <p class="topic-description">
+                                Системы управления, микроконтроллеры STM32 и Arduino, программирование и полная автоматизация процессов
+                            </p>
+                            <a href="https://example.com/automation" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 2.4 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">🔌</div>
+                            <h3 class="topic-title">Система сенсора касания</h3>
+                            <p class="topic-description">
+                                Детектор контакта, электромеханические решения, фильтрация шумов и гальваническая изоляция сигналов
+                            </p>
+                            <a href="https://example.com/touch-probe" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 2.5 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">🔧</div>
+                            <h3 class="topic-title">Диагностика и ремонт</h3>
+                            <p class="topic-description">
+                                Поиск и устранение неисправностей, техническое обслуживание, замена компонентов и профилактический уход
+                            </p>
+                            <a href="https://example.com/diagnostics" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- РАЗДЕЛ 3: ПРИМЕНЕНИЕ И РАЗВИТИЕ                          -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <section class="section" data-section-id="2">
+                <div class="topics-grid">
+                    
+                    <!-- ТОПИК 3.1 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">📐</div>
+                            <h3 class="topic-title">Проектирование деталей</h3>
+                            <p class="topic-description">
+                                CAD-моделирование в Fusion 360, подготовка геометрии к обработке и оптимизация траекторий электродов
+                            </p>
+                            <a href="https://example.com/design" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 3.2 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">🎯</div>
+                            <h3 class="topic-title">Оптимизация производства</h3>
+                            <p class="topic-description">
+                                Способы увеличения скорости обработки, оптимизация режимов работы, экономия ресурсов и энергии
+                            </p>
+                            <a href="https://example.com/productivity" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 3.3 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">🌍</div>
+                            <h3 class="topic-title">Примеры применения</h3>
+                            <p class="topic-description">
+                                Реальные проекты и кейсы использования EDM в аэрокосмосе, медицине, электронике и автомобилестроении
+                            </p>
+                            <a href="https://example.com/case-studies" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 3.4 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">📚</div>
+                            <h3 class="topic-title">Учебные материалы</h3>
+                            <p class="topic-description">
+                                Видеоуроки, документация, электрические схемы, расчеты, чертежи и полезные технические ресурсы
+                            </p>
+                            <a href="https://example.com/tutorials" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                    <!-- ТОПИК 3.5 -->
+                    <div class="topic-card">
+                        <div class="topic-card-inner">
+                            <div class="topic-emoji">💬</div>
+                            <h3 class="topic-title">Сообщество инженеров</h3>
+                            <p class="topic-description">
+                                Форум, обсуждение вопросов, обмен опытом и советами с другими разработчиками EDM-машин и специалистами
+                            </p>
+                            <a href="https://example.com/community" class="topic-link" onclick="handleTopicClick(event)">Читать →</a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
     </div>
 
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- JAVASCRIPT КОД                                                  -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
     <script>
-        // Инициализация Telegram Web App
-        let tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрываем на весь экран
-        tg.enableClosingConfirmation(); // Подтверждение закрытия
+        /* ╔════════════════════════════════════════════════════════════╗
+           ║         ИНИЦИАЛИЗАЦИЯ TELEGRAM WEB APP                      ║
+           ╚════════════════════════════════════════════════════════════╝ */
 
-        // Список ваших файлов
-        const files = [
-            { id: 1, title: "Схема управления", file: "schemes/control-schema.html", type: "html" },
-            { id: 2, title: "Монтажный чертеж", file: "schemes/mounting-drawing.html", type: "html" },
-            { id: 3, title: "Интерактивный BOM", file: "schemes/bom.html", type: "html" },
-            { id: 4, title: "Принципиальная схема", file: "schemes/main-schema.png", type: "image" }
-        ];
-
-        // Показываем список файлов
-        function renderFileList() {
-            const fileList = document.getElementById('file-list');
-            fileList.innerHTML = '';
-            
-            files.forEach(file => {
-                const div = document.createElement('div');
-                div.className = 'file-item';
-                div.innerHTML = `📄 ${file.title}`;
-                div.onclick = () => openFile(file);
-                fileList.appendChild(div);
-            });
-        }
-
-        // Открываем файл
-        function openFile(file) {
-            document.getElementById('file-list').style.display = 'none';
-            document.getElementById('file-content').style.display = 'block';
-            
-            const display = document.getElementById('content-display');
-            
-            if (file.type === 'html') {
-                // Загружаем HTML файл
-                fetch(file.file)
-                    .then(response => response.text())
-                    .then(html => {
-                        display.innerHTML = html;
-                    })
-                    .catch(error => {
-                        display.innerHTML = `<p>Ошибка загрузки файла: ${error}</p>`;
-                    });
-            } else if (file.type === 'image') {
-                display.innerHTML = `<img src="${file.file}" style="max-width:100%;" alt="${file.title}">`;
+        function initTelegramApp() {
+            // Проверить наличие Telegram Web App API
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = Telegram.WebApp;
+                
+                // Активировать приложение
+                tg.ready();
+                
+                // Развернуть приложение на весь экран
+                tg.expand();
+                
+                // Установить цвет фона (для мобильного браузера)
+                tg.setBackgroundColor('#0a0a0a');
+                
+                // Установить цвет заголовка
+                tg.setHeaderColor('#0a0a0a');
+                
+                // Отключить вертикальную полосу прокрутки браузера
+                document.body.style.overflowY = 'hidden';
+                
+                console.log('✓ Telegram Web App инициализирован');
+            } else {
+                console.log('⚠ Telegram Web App API недоступен (разработка локально)');
             }
         }
 
-        // Возврат к списку
-        function showFileList() {
-            document.getElementById('file-list').style.display = 'block';
-            document.getElementById('file-content').style.display = 'none';
+        /* ╔════════════════════════════════════════════════════════════╗
+           ║         ПЕРЕКЛЮЧЕНИЕ РАЗДЕЛОВ                              ║
+           ╚════════════════════════════════════════════════════════════╝ */
+
+        function switchSection(sectionIndex) {
+            // Получить все разделы и кнопки
+            const sections = document.querySelectorAll('.section');
+            const buttons = document.querySelectorAll('.nav-button');
+
+            // Скрыть все разделы и убрать активность с кнопок
+            sections.forEach((section, index) => {
+                section.classList.remove('active');
+                buttons[index].classList.remove('active');
+            });
+
+            // Показать выбранный раздел и активировать кнопку
+            if (sections[sectionIndex]) {
+                sections[sectionIndex].classList.add('active');
+                buttons[sectionIndex].classList.add('active');
+                
+                // Прокрутить контент в начало
+                document.querySelector('.content-wrapper').scrollTop = 0;
+                
+                // Прокрутить навигацию к активной кнопке
+                scrollNavToButton(buttons[sectionIndex]);
+                
+                console.log(`✓ Переключение на раздел ${sectionIndex + 1}`);
+            }
         }
 
-        // Инициализация
-        renderFileList();
+        /* ╔════════════════════════════════════════════════════════════╗
+           ║         ПРОКРУТКА НАВИГАЦИИ К АКТИВНОЙ КНОПКЕ               ║
+           ╚════════════════════════════════════════════════════════════╝ */
+
+        function scrollNavToButton(button) {
+            const container = document.querySelector('.nav-container');
+            const buttonRect = button.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            // Вычислить смещение для плавной прокрутки
+            const offset = buttonRect.left - containerRect.left;
+            const scrollPosition = container.scrollLeft + offset - 20;
+
+            // Плавная прокрутка
+            container.scrollTo({
+                left: scrollPosition,
+                behavior: 'smooth'
+            });
+        }
+
+        /* ╔════════════════════════════════════════════════════════════╗
+           ║         ОБРАБОТКА КЛИКОВ НА ССЫЛКИ ТОПИКОВ                  ║
+           ╚════════════════════════════════════════════════════════════╝ */
+
+        function handleTopicClick(event) {
+            event.preventDefault();
+            const url = event.currentTarget.getAttribute('href');
+
+            // Если Telegram Web App доступен, использовать его функцию открытия ссылки
+            if (window.Telegram && window.Telegram.WebApp) {
+                Telegram.WebApp.openLink(url);
+            } else {
+                // Иначе открыть в новой вкладке
+                window.open(url, '_blank');
+            }
+
+            console.log(`→ Открытие ссылки: ${url}`);
+        }
+
+        /* ╔════════════════════════════════════════════════════════════╗
+           ║         ОБНАРУЖЕНИЕ ТЕМЫ СИСТЕМЫ                            ║
+           ╚════════════════════════════════════════════════════════════╝ */
+
+        function detectSystemTheme() {
+            const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            
+            // Применить текущую тему
+            applyTheme(darkModeQuery.matches);
+
+            // Следить за изменением темы
+            darkModeQuery.addEventListener('change', (e) => {
+                applyTheme(e.matches);
+                console.log(`✓ Тема изменена на: ${e.matches ? 'темную' : 'светлую'}`);
+            });
+        }
+
+        function applyTheme(isDarkMode) {
+            const html = document.documentElement;
+            
+            if (isDarkMode) {
+                // Темная тема
+                html.style.colorScheme = 'dark';
+                console.log('🌙 Темная тема активирована');
+            } else {
+                // Светлая тема
+                html.style.colorScheme = 'light';
+                console.log('☀️ Светлая тема активирована');
+            }
+        }
+
+        /* ╔════════════════════════════════════════════════════════════╗
+           ║         ОПТИМИЗАЦИЯ ПРОИЗВОДИТЕЛЬНОСТИ                      ║
+           ╚════════════════════════════════════════════════════════════╝ */
+
+        function setupIntersectionObserver() {
+            // Использовать Intersection Observer для ленивой загрузки анимаций
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '50px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Добавить класс видимости
+                        entry.target.style.opacity = '1';
+                        // Остановить наблюдение за элементом
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Наблюдать за всеми карточками
+            document.querySelectorAll('.topic-card').forEach(card => {
+                card.style.opacity = '0.8';
+                observer.observe(card);
+            });
+        }
+
+        /* ╔════════════════════════════════════════════════════════════╗
+           ║         ИНИЦИАЛИЗАЦИЯ КЛАВИАТУРЫ                            ║
+           ╚════════════════════════════════════════════════════════════╝ */
+
+        function setupKeyboardNavigation() {
+            document.addEventListener('keydown', (event) => {
+                const navButtons = document.querySelectorAll('.nav-button');
+                
+                if (event.key === 'ArrowLeft') {
+                    // Навигация влево
+                    const currentButton = document.querySelector('.nav-button.active');
+                    const currentIndex = Array.from(navButtons).indexOf(currentButton);
+                    if (currentIndex > 0) {
+                        switchSection(currentIndex - 1);
+                    }
+                } else if (event.key === 'ArrowRight') {
+                    // Навигация вправо
+                    const currentButton = document.querySelector('.nav-button.active');
+                    const currentIndex = Array.from(navButtons).indexOf(currentButton);
+                    if (currentIndex < navButtons.length - 1) {
+                        switchSection(currentIndex + 1);
+                    }
+                }
+            });
+        }
+
+        /* ╔════════════════════════════════════════════════════════════╗
+           ║         ГЛАВНАЯ ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ                       ║
+           ╚════════════════════════════════════════════════════════════╝ */
+
+        function initializeApp() {
+            console.log('🚀 Инициализация SEMAT E-HUB...');
+            
+            // Инициализировать Telegram Web App
+            initTelegramApp();
+            
+            // Определить тему системы
+            detectSystemTheme();
+            
+            // Настроить наблюдатель пересечений
+            setupIntersectionObserver();
+            
+            // Настроить навигацию с клавиатуры
+            setupKeyboardNavigation();
+            
+            console.log('✓ SEMAT E-HUB готов к использованию!');
+        }
+
+        /* ╔════════════════════════════════════════════════════════════╗
+           ║         ЗАПУСК ПРИЛОЖЕНИЯ ПОСЛЕ ЗАГРУЗКИ СТРАНИЦЫ           ║
+           ╚════════════════════════════════════════════════════════════╝ */
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+        // Дополнительная инициализация при готовности окна
+        window.addEventListener('load', () => {
+            console.log('✓ Все ресурсы загружены');
+        });
     </script>
 </body>
 </html>
