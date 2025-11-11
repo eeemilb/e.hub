@@ -289,7 +289,7 @@
 
         .section {
             display: none;
-            animation: sectionFadeIn 0.4s ease-out forwards;
+            animation: sectionFadeIn 1.4s ease-out forwards;
         }
 
         .section.active {
@@ -359,10 +359,10 @@
         /* ЭФФЕКТ ПРИ НАВЕДЕНИИ */
         .topic-card:hover {
             border-color: var(--neon-yellow);
-            transform: translateY(-4px);
+            transform: translateY(-5px);
             box-shadow: 
-                0 0 20px rgba(0, 217, 255, 0.3),
-                0 0 40px rgba(255, 255, 0, 0.2);
+                0 0 20px rgba(0, 217, 255, 0.2),
+                0 0 40px rgba(255, 255, 0, 0.4);
         }
 
         /* ФОНОВЫЙ ЭФФЕКТ СВЕЧЕНИЯ НА КАРТОЧКЕ */
@@ -399,7 +399,7 @@
 
         @keyframes emojiFloat {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-4px); }
+            50% { transform: translateY(-7px); }
         }
 
         .topic-title {
