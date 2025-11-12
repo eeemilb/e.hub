@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D модель STL</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: #f0f0f0;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: #333;
+            font-family: Arial, sans-serif;
+            z-index: 100;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">3D модель - Используйте мышь для вращения и масштабирования</div>
+    <div id="loading">Загрузка модели...</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/STLLoader.js"></script>
+
+    <script>
+        // Сцена
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0);
+
+        // Камера
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 50;
+
+        // Рендерер
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Управление
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // Освещение
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Загрузка STL файла
+        const loader = new THREE.STLLoader();
+        
+        // ЗАМЕНИТЕ 'your-model.stl' на путь к вашему STL файлу
+        loader.load('https://github.com/eeemilb/e.hub/blob/main/3D/ImageToStl.com_Breakdown%2Bdetection%2Bmodule%2BV1.0.stl', function (geometry) {
+            // Скрыть сообщение о загрузке
+            document.getElementById('loading').style.display = 'none';
+            
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x0066cc,
+                specular: 0x111111,
+                shininess: 200
+            });
+            
+            const mesh = new THREE.Mesh(geometry, material);
+            
+            // Центрирование модели
+            geometry.computeBoundingBox();
+            const center = geometry.boundingBox.getCenter(new THREE.Vector3());
+            mesh.position.x = -center.x;
+            mesh.position.y = -center.y;
+            mesh.position.z = -center.z;
+            
+            scene.add(mesh);
+            
+            // Автоматическое масштабирование
+            const size = geometry.boundingBox.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scale = 40 / maxDim;
+            mesh.scale.setScalar(scale);
+            
+            // Настройка камеры
+            camera.position.z = maxDim * 1.5;
+            controls.update();
+        }, 
+        // Прогресс загрузки
+        function (xhr) {
+            if (xhr.lengthComputable) {
+                const percentComplete = xhr.loaded / xhr.total * 100;
+                console.log('Загружено: ' + Math.round(percentComplete) + '%');
+            }
+        },
+        // Ошибка загрузки
+        function (error) {
+            console.error('Ошибка загрузки STL файла:', error);
+            document.getElementById('loading').innerHTML = 'Ошибка загрузки модели';
+        });
+
+        // Анимация
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Обработка изменения размера окна
+        window.addEventListener('resize', function () {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
